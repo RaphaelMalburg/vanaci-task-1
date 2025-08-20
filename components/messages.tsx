@@ -1,95 +1,69 @@
-import { PreviewMessage, ThinkingMessage } from './message';
-import { Greeting } from './greeting';
 import { memo } from 'react';
-import type { Vote } from '@/lib/db/schema';
-import equal from 'fast-deep-equal';
-import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
-import { useMessages } from '@/hooks/use-messages';
-import type { ChatMessage } from '@/lib/types';
-import { useDataStream } from './data-stream-provider';
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 interface MessagesProps {
   chatId: string;
-  status: UseChatHelpers<ChatMessage>['status'];
-  votes: Array<Vote> | undefined;
   messages: ChatMessage[];
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
-  isReadonly: boolean;
-  isArtifactVisible: boolean;
+  isLoading: boolean;
 }
 
-function PureMessages({
-  chatId,
-  status,
-  votes,
-  messages,
-  setMessages,
-  regenerate,
-  isReadonly,
-}: MessagesProps) {
-  const {
-    containerRef: messagesContainerRef,
-    endRef: messagesEndRef,
-    onViewportEnter,
-    onViewportLeave,
-    hasSentMessage,
-  } = useMessages({
-    chatId,
-    status,
-  });
-
-  useDataStream();
-
+function PureMessages({ messages, isLoading }: MessagesProps) {
   return (
-    <div
-      ref={messagesContainerRef}
-      className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 relative"
-    >
-      {messages.length === 0 && <Greeting />}
-
-      {messages.map((message, index) => (
-        <PreviewMessage
+    <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 px-4">
+      {messages.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-full text-center">
+          <h1 className="text-2xl font-semibold mb-2">Welcome to Chat</h1>
+          <p className="text-muted-foreground">
+            Start a conversation by typing a message below.
+          </p>
+        </div>
+      )}
+      
+      {messages.map((message) => (
+        <motion.div
           key={message.id}
-          chatId={chatId}
-          message={message}
-          isLoading={status === 'streaming' && messages.length - 1 === index}
-          vote={
-            votes
-              ? votes.find((vote) => vote.messageId === message.id)
-              : undefined
-          }
-          setMessages={setMessages}
-          regenerate={regenerate}
-          isReadonly={isReadonly}
-          requiresScrollPadding={
-            hasSentMessage && index === messages.length - 1
-          }
-        />
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className={`flex ${
+            message.role === 'user' ? 'justify-end' : 'justify-start'
+          }`}
+        >
+          <div
+            className={`max-w-[80%] rounded-lg px-4 py-2 ${
+              message.role === 'user'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-foreground'
+            }`}
+          >
+            <div className="whitespace-pre-wrap">{message.content}</div>
+          </div>
+        </motion.div>
       ))}
-
-      {status === 'submitted' &&
-        messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
-
-      <motion.div
-        ref={messagesEndRef}
-        className="shrink-0 min-w-[24px] min-h-[24px]"
-        onViewportLeave={onViewportLeave}
-        onViewportEnter={onViewportEnter}
-      />
+      
+      {isLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-start"
+        >
+          <div className="bg-muted text-foreground rounded-lg px-4 py-2">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
 
-export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
-
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (!equal(prevProps.messages, nextProps.messages)) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
-
-  return false;
-});
+export const Messages = memo(PureMessages);
