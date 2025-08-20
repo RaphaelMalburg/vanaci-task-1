@@ -1,51 +1,52 @@
 'use client';
 
+// Step 1: Import necessary dependencies for animations and UI components
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 import { memo } from 'react';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { VisibilityType } from './visibility-selector';
-import type { ChatMessage } from '@/lib/types';
 
+// Step 2: Define TypeScript interface for component props
 interface SuggestedActionsProps {
   chatId: string;
-  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
-  selectedVisibilityType: VisibilityType;
+  sendMessage: (content: string) => void;
 }
 
+// Step 3: Pure component for rendering suggested actions
 function PureSuggestedActions({
   chatId,
   sendMessage,
-  selectedVisibilityType,
 }: SuggestedActionsProps) {
+  // Step 1: Define suggested actions for user interaction
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Conversar com a IA',
+      label: 'sobre qualquer assunto',
+      action: 'Olá! Gostaria de conversar sobre tecnologia, ciência, ou qualquer outro tópico que te interesse.',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Pedir ajuda para',
+      label: 'resolver problemas',
+      action: 'Preciso de ajuda para resolver um problema. Você pode me orientar passo a passo?',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Solicitar redirecionamento',
+      label: 'para outra página',
+      action: 'Gostaria de ser redirecionado para uma página específica. Você pode me ajudar com isso?',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Obter informações',
+      label: 'sobre navegação no site',
+      action: 'Como posso navegar melhor neste site? Quais páginas estão disponíveis?',
     },
   ];
 
   return (
+    // Step 3: Render suggested actions in a responsive grid
     <div
       data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
+      className="grid sm:grid-cols-2 gap-4 w-full max-w-2xl mx-auto"
     >
+      {/* Step 4: Map through each suggested action with animation */}
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,22 +56,23 @@ function PureSuggestedActions({
           key={`suggested-action-${suggestedAction.title}-${index}`}
           className={index > 1 ? 'hidden sm:block' : 'block'}
         >
+          {/* Step 5: Create clickable button for each suggestion */}
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={async () => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
-
-              sendMessage({
-                role: 'user',
-                parts: [{ type: 'text', text: suggestedAction.action }],
-              });
+              // Step 2: Send the suggested action message
+              sendMessage(suggestedAction.action);
             }}
-            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
+            className="h-auto p-6 text-left justify-start hover:bg-muted/50 transition-all duration-200 border-border/50 hover:border-primary/30 rounded-xl group w-full"
           >
-            <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">
-              {suggestedAction.label}
-            </span>
+            <div className="space-y-2">
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                {suggestedAction.title}
+              </div>
+              <div className="text-sm text-muted-foreground leading-relaxed">
+                {suggestedAction.label}
+              </div>
+            </div>
           </Button>
         </motion.div>
       ))}
@@ -78,13 +80,13 @@ function PureSuggestedActions({
   );
 }
 
+// Step 6: Export memoized component with custom comparison for performance
 export const SuggestedActions = memo(
   PureSuggestedActions,
   (prevProps, nextProps) => {
+    // Only re-render if chatId changes
     if (prevProps.chatId !== nextProps.chatId) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-      return false;
-
+    
     return true;
   },
 );

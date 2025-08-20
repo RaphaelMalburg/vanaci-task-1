@@ -1,62 +1,80 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
+# Chat Simples com n8n
 
 <p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
+    Uma aplicação de chat simples construída com Next.js que se conecta a um webhook do n8n para processamento de mensagens.
 </p>
 
-<p align="center">
-  <a href="https://chat-sdk.dev"><strong>Read Docs</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+## Sobre o Projeto
 
-## Features
+Esta é uma aplicação de chat simplificada que foi desenvolvida para demonstrar a integração entre uma interface web moderna e o n8n (uma ferramenta de automação de fluxo de trabalho). A aplicação permite que os usuários enviem mensagens através de uma interface de chat limpa e intuitiva, que são então processadas por um webhook do n8n.
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://sdk.vercel.ai/docs)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+## Características Principais
 
-## Model Providers
+- **Interface de Chat Simples**: Interface de usuário limpa e responsiva construída com Next.js e Tailwind CSS
+- **Integração com n8n**: Conecta-se diretamente a um webhook do n8n para processamento de mensagens
+- **Gerenciamento de Sessão**: Cada conversa possui um ID de sessão único para rastreamento
+- **Design Responsivo**: Funciona perfeitamente em dispositivos desktop e móveis
+- **Componentes Modernos**: Utiliza componentes UI do shadcn/ui para uma experiência consistente
 
-This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat model. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+## Tecnologias Utilizadas
 
-## Deploy Your Own
+- [Next.js](https://nextjs.org) - Framework React para aplicações web
+- [Tailwind CSS](https://tailwindcss.com) - Framework CSS utilitário
+- [shadcn/ui](https://ui.shadcn.com) - Componentes UI reutilizáveis
+- [Framer Motion](https://framer.com/motion) - Biblioteca de animações
+- [n8n](https://n8n.io) - Plataforma de automação de fluxo de trabalho
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+## Como Funciona
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Learn+more+about+how+to+get+the+API+Keys+for+the+application&envLink=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot%2Fblob%2Fmain%2F.env.example&demo-title=AI+Chatbot&demo-description=An+Open-Source+AI+Chatbot+Template+Built+With+Next.js+and+the+AI+SDK+by+Vercel.&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22integrationSlug%22%3A%22upstash%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
+1. **Interface do Usuário**: Os usuários digitam suas mensagens na interface de chat
+2. **Envio de Mensagem**: As mensagens são enviadas para a API interna da aplicação
+3. **Processamento n8n**: A API encaminha as mensagens para um webhook do n8n configurado
+4. **Resposta**: O n8n processa a mensagem e retorna uma resposta
+5. **Exibição**: A resposta é exibida na interface de chat
 
-## Running locally
+## Configuração
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+Para executar esta aplicação, você precisará:
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+1. **Configurar as variáveis de ambiente**:
+   ```bash
+   cp .env.example .env
+   ```
+   
+2. **Definir a URL do webhook do n8n**:
+   ```
+   N8N_WEBHOOK_URL=https://seu-n8n-instance.com/webhook/chat
+   ```
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+3. **Instalar as dependências**:
+   ```bash
+   npm install
+   ```
 
-```bash
-pnpm install
-pnpm dev
-```
+4. **Executar em modo de desenvolvimento**:
+   ```bash
+   npm run dev
+   ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
+## Estrutura do Projeto
+
+- `/app` - Páginas e rotas da aplicação Next.js
+- `/components` - Componentes React reutilizáveis
+- `/lib` - Utilitários e configurações
+- `/public` - Arquivos estáticos
+
+## Personalização
+
+Esta aplicação foi projetada para ser facilmente personalizável:
+
+- **Estilo**: Modifique os estilos em `app/globals.css` ou nos componentes individuais
+- **Componentes**: Adicione ou modifique componentes na pasta `/components`
+- **Lógica de Chat**: Ajuste a lógica de processamento de mensagens em `/app/(chat)/api/chat/route.ts`
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+---
+
+**Nota**: Esta é uma versão simplificada de uma aplicação de chat, focada na demonstração da integração com n8n. Para uso em produção, considere adicionar recursos como autenticação, persistência de dados e tratamento de erros mais robusto.
