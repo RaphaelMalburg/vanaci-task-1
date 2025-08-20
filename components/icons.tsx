@@ -1,6 +1,7 @@
-export const BotIcon = () => {
+export const BotIcon = ({ className }: { className?: string }) => {
   return (
     <svg
+      className={className}
       height="16"
       strokeLinejoin="round"
       viewBox="0 0 16 16"
@@ -57,7 +58,7 @@ export const MoonIcon = ({ className }: { className?: string }) => {
   );
 };
 
-export const UserIcon = () => {
+export const UserIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       data-testid="geist-icon"
@@ -77,9 +78,10 @@ export const UserIcon = () => {
   );
 };
 
-export const AttachmentIcon = () => {
+export const AttachmentIcon = ({ className }: { className?: string }) => {
   return (
     <svg
+      className={className}
       height="16"
       strokeLinejoin="round"
       viewBox="0 0 16 16"

@@ -8,7 +8,7 @@ export function useMessages({
   status,
 }: {
   chatId: string;
-  status: UseChatHelpers<ChatMessage>['status'];
+  status: 'loading' | 'awaiting_message' | 'in_progress' | 'submitted';
 }) {
   const {
     containerRef,

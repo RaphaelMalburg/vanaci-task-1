@@ -31,7 +31,7 @@ export function Chat({
   const [isLoading, setIsLoading] = useState(false);
   
   // Step 5: Get persistent session ID from localStorage
-  const { sessionId, setSessionId } = useSession();
+  const { sessionId, resetSession } = useSession();
   
   // Step 5.1: Initialize n8n integration hook
   const { sendMessageAndProcess } = useN8nIntegration();
@@ -82,8 +82,10 @@ export function Chat({
         const assistantMessage = await response.json();
         
         // Update session ID if returned from API
-        if (assistantMessage.sessionId) {
-          setSessionId(assistantMessage.sessionId);
+        if (assistantMessage.sessionId && assistantMessage.sessionId !== sessionId) {
+          // Como não temos acesso direto a setSessionId, usamos localStorage diretamente
+          localStorage.setItem('chat-session-id', assistantMessage.sessionId);
+          // Podemos usar resetSession() se precisarmos atualizar o estado local
         }
 
         setMessages(prev => [...prev, {
