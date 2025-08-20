@@ -1,7 +1,5 @@
 import Script from 'next/script';
 
-export const experimental_ppr = true;
-
 export default async function Layout({
   children,
 }: {

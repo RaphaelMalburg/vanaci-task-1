@@ -21,35 +21,32 @@ export function useN8nIntegration() {
   const router = useRouter();
 
   // Função para enviar mensagem ao n8n
-  const sendToN8n = useCallback(async (message: string, chatId: string): Promise<N8nResponse | null> => {
+  const sendToN8n = useCallback(async (message: string, sessionId: string): Promise<N8nResponse | null> => {
+    const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+    const bearerToken = process.env.NEXT_PUBLIC_N8N_BEARER;
+    
+    if (!webhookUrl) {
+      console.error('N8N_WEBHOOK_URL não configurado');
+      return null;
+    }
+    
+    if (!bearerToken) {
+      console.error('N8N_BEARER token não configurado');
+      return null;
+    }
+
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || process.env.N8N_WEBHOOK_URL;
-      
-      if (!webhookUrl) {
-        console.warn('N8N_WEBHOOK_URL não configurado');
-        return null;
-      }
-
-      const payload: N8nPayload = {
-        message,
-        chatId,
-        timestamp: new Date().toISOString()
-      };
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-
-      // Adicionar bearer token se configurado
-      const bearerToken = process.env.NEXT_PUBLIC_N8N_BEARER || process.env.N8N_BEARER;
-      if (bearerToken) {
-        headers['Authorization'] = `Bearer ${bearerToken}`;
-      }
-
       const response = await fetch(webhookUrl, {
         method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`
+        },
+        body: JSON.stringify({
+          message,
+          sessionId,
+          timestamp: Date.now()
+        })
       });
 
       if (!response.ok) {
