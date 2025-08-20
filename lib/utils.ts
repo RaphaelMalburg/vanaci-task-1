@@ -9,7 +9,10 @@ import { twMerge } from 'tailwind-merge';
 import type { DBMessage, Document } from '@/lib/db/schema';
 import { ChatSDKError, type ErrorCode } from './errors';
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from './types';
-import { formatISO } from 'date-fns';
+// Simple formatISO replacement
+function formatISO(date: Date): string {
+  return date.toISOString();
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -103,7 +106,7 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
     role: message.role as 'user' | 'assistant' | 'system',
     parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
     metadata: {
-      createdAt: formatISO(message.createdAt),
+      createdAt: formatISO(new Date(message.createdAt)),
     },
   }));
 }

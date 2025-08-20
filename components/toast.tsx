@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState, type ReactNode } from 'react';
-import { toast as sonnerToast } from 'sonner';
+import React, { type ReactNode } from 'react';
 import { CheckCircleFillIcon, WarningIcon } from './icons';
-import { cn } from '@/lib/utils';
 
 const iconsByType: Record<'success' | 'error', ReactNode> = {
   success: <CheckCircleFillIcon />,
@@ -11,9 +9,9 @@ const iconsByType: Record<'success' | 'error', ReactNode> = {
 };
 
 export function toast(props: Omit<ToastProps, 'id'>) {
-  return sonnerToast.custom((id) => (
-    <Toast id={id} type={props.type} description={props.description} />
-  ));
+  // Simple console log implementation for now
+  console.log(`Toast ${props.type}: ${props.description}`);
+  return null;
 }
 
 function Toast(props: ToastProps) {
