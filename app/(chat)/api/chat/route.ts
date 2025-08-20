@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
 
     // Step 5: Get n8n webhook URL from environment variables
     const webhookUrl = process.env.N8N_WEBHOOK_URL;
-    
+
     if (!webhookUrl) {
       return Response.json(
-        { error: 'N8N webhook URL not configured' },
+        { error: 'N8N webhook URL not configured ,' },
         { status: 500 }
       );
     }
