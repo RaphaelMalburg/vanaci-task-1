@@ -119,7 +119,7 @@ export function useN8nIntegration() {
       console.log('🔍 [DEBUG] Tipo de response.data:', typeof response.data);
       
       // Tentar diferentes propriedades para a mensagem de resposta
-      // Baseado na resposta do n8n: {"data": "{\"action\": \"message\", \"message\": \"...\"}"}  
+      // Baseado nos logs do Vercel: {"data": "{\"action\": \"message\", \"message\": \"...\"}"}  
       if (response.data) {
         console.log('🔍 [DEBUG] response.data encontrado:', response.data);
         try {
@@ -131,6 +131,9 @@ export function useN8nIntegration() {
             if (parsedData.message) {
               console.log('✅ [DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
               return parsedData.message;
+            } else if (parsedData.action === 'message' && parsedData.message) {
+              console.log('✅ [DEBUG] Mensagem encontrada via action=message:', parsedData.message);
+              return parsedData.message;
             }
           }
           // Se data já for um objeto
@@ -140,6 +143,10 @@ export function useN8nIntegration() {
           }
         } catch (e) {
           console.error('❌ [DEBUG] Erro ao fazer parse do data:', e);
+          // Fallback: usar a string data como está se não conseguir fazer parse
+          if (typeof response.data === 'string') {
+            return response.data;
+          }
         }
       }
       

@@ -119,6 +119,7 @@ export async function POST(request: NextRequest) {
     // Processar diferentes formatos de resposta do n8n
     let content = 'No response from AI agent';
     
+    // Baseado nos logs do Vercel: {"data":"{\"action\": \"message\", \"message\": \"...\"}"}  
     if (webhookData.data) {
       console.log('🔍 [API DEBUG] webhookData.data encontrado:', webhookData.data);
       try {
@@ -130,6 +131,9 @@ export async function POST(request: NextRequest) {
           if (parsedData.message) {
             console.log('✅ [API DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
             content = parsedData.message;
+          } else if (parsedData.action === 'message' && parsedData.message) {
+            console.log('✅ [API DEBUG] Mensagem encontrada via action=message:', parsedData.message);
+            content = parsedData.message;
           }
         }
         // Se data já for um objeto
@@ -139,6 +143,10 @@ export async function POST(request: NextRequest) {
         }
       } catch (e) {
         console.error('❌ [API DEBUG] Erro ao fazer parse do data:', e);
+        // Fallback: usar a string data como está se não conseguir fazer parse
+        if (typeof webhookData.data === 'string') {
+          content = webhookData.data;
+        }
       }
     } else if (webhookData.message) {
       console.log('✅ [API DEBUG] Mensagem encontrada em webhookData.message:', webhookData.message);
