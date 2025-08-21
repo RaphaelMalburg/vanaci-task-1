@@ -114,21 +114,9 @@ export function useN8nIntegration() {
     const response = await sendToN8n(message, chatId);
     
     if (response) {
-      // Verificar primeiro se há extractedAction (do processamento de markdown)
-      const actionData = response.extractedAction || response;
-      
-      // Se houver redirecionamento
-      if (actionData.action === 'redirect' && actionData.url) {
-        handleRedirect(actionData.url);
-        return `Redirecionando para: ${actionData.url}`;
-      }
-      
       // DEBUG: Log completo da resposta
       console.log('🔍 [DEBUG] Resposta completa do n8n:', JSON.stringify(response, null, 2));
       console.log('🔍 [DEBUG] Tipo de response.data:', typeof response.data);
-      
-      // Tentar diferentes propriedades para a mensagem de resposta
-      // Baseado nos logs: a mensagem está em response.payload.data como string JSON
       
       // Primeiro, verificar se há payload.data (formato do webhook)
       if (response.payload && response.payload.data) {
@@ -139,6 +127,17 @@ export function useN8nIntegration() {
             console.log('🔍 [DEBUG] payload.data é string, fazendo parse...');
             const parsedData = JSON.parse(response.payload.data);
             console.log('🔍 [DEBUG] parsedData:', parsedData);
+            
+            // Verificar se é um redirecionamento
+            if (parsedData.action === 'redirect' && parsedData.url) {
+              console.log('🔄 [DEBUG] Redirecionamento detectado:', parsedData.url);
+              // Limpar a URL removendo backticks e espaços extras
+              const cleanUrl = parsedData.url.replace(/`/g, '').trim();
+              handleRedirect(cleanUrl);
+              return `Redirecionando para: ${cleanUrl}`;
+            }
+            
+            // Verificar se é uma mensagem
             if (parsedData.action === 'message' && parsedData.message) {
               console.log('✅ [DEBUG] Mensagem encontrada via action=message:', parsedData.message);
               return parsedData.message;
