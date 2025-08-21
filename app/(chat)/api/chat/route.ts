@@ -112,10 +112,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 10: Return the AI assistant response to the client
+    // Processar diferentes formatos de resposta do n8n
+    let content = 'No response from AI agent';
+    
+    if (webhookData.data && webhookData.data.message) {
+      content = webhookData.data.message;
+    } else if (webhookData.message) {
+      content = webhookData.message;
+    } else if (webhookData.subject) {
+      content = webhookData.subject;
+    } else if (webhookData.response) {
+      content = webhookData.response;
+    }
+    
     const response = {
       id: generateUUID(),
       role: 'assistant',
-      content: webhookData.response || webhookData.message || 'No response from AI agent',
+      content: content,
       sessionId: currentSessionId,
     };
     

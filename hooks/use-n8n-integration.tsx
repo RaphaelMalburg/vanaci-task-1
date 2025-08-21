@@ -11,6 +11,15 @@ interface N8nResponse {
     action?: 'redirect' | 'message';
     url?: string;
   };
+  // Propriedades adicionais baseadas na resposta real do n8n
+  recipient?: boolean;
+  subject?: string;
+  data?: {
+    action?: string;
+    message?: string;
+    [key: string]: any;
+  };
+  [key: string]: any; // Para capturar outras propriedades
 }
 
 // Interface para payload enviado ao n8n
@@ -105,9 +114,24 @@ export function useN8nIntegration() {
         return `Redirecionando para: ${actionData.url}`;
       }
       
-      // Se houver mensagem de resposta
+      // Tentar diferentes propriedades para a mensagem de resposta
+      // Baseado na resposta do n8n: {"recipient": true, "subject": "...", "data": {"action": "...", "message": "..."}}
+      if (response.data && response.data.message) {
+        return response.data.message;
+      }
+      
       if (response.message) {
         return response.message;
+      }
+      
+      // Se a resposta for um objeto com subject, usar como fallback
+      if (response.subject) {
+        return response.subject;
+      }
+      
+      // Se nenhuma propriedade específica for encontrada, tentar converter para string
+      if (typeof response === 'object') {
+        return JSON.stringify(response, null, 2);
       }
     }
     
