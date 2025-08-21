@@ -84,17 +84,18 @@ export async function POST(request: NextRequest) {
       
     } catch (fetchError) {
       console.error('Fetch error occurred:', fetchError);
+      const error = fetchError as Error;
       console.error('Error details:', {
-        name: fetchError.name,
-        message: fetchError.message,
-        stack: fetchError.stack
+        name: error.name,
+        message: error.message,
+        stack: error.stack
       });
       
       // Fallback response when fetch fails
       return Response.json({
         id: generateUUID(),
         role: 'assistant',
-        content: `Recebi sua mensagem: "${message.content}". Erro de conexão com o sistema n8n (${fetchError.message}). Sua mensagem foi registrada.`,
+        content: `Recebi sua mensagem: "${message.content}". Erro de conexão com o sistema n8n (${error.message}). Sua mensagem foi registrada.`,
         sessionId: currentSessionId,
         fallback: true,
         error: 'fetch_failed'
