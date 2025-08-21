@@ -11,12 +11,21 @@ interface N8nResponse {
     action?: 'redirect' | 'message';
     url?: string;
   };
-  // Propriedades adicionais baseadas na resposta real do n8n
+  success?: boolean;
+  received?: boolean;
   recipient?: boolean;
   subject?: string;
   data?: {
     action?: string;
     message?: string;
+    [key: string]: any;
+  };
+  payload?: {
+    data?: string | {
+      action?: string;
+      message?: string;
+      [key: string]: any;
+    };
     [key: string]: any;
   };
   [key: string]: any; // Para capturar outras propriedades
@@ -119,7 +128,40 @@ export function useN8nIntegration() {
       console.log('🔍 [DEBUG] Tipo de response.data:', typeof response.data);
       
       // Tentar diferentes propriedades para a mensagem de resposta
-      // Baseado nos logs do Vercel: {"data": "{\"action\": \"message\", \"message\": \"...\"}"}  
+      // Baseado nos logs: a mensagem está em response.payload.data como string JSON
+      
+      // Primeiro, verificar se há payload.data (formato do webhook)
+      if (response.payload && response.payload.data) {
+        console.log('🔍 [DEBUG] response.payload.data encontrado:', response.payload.data);
+        try {
+          // Se payload.data for uma string JSON, fazer parse
+          if (typeof response.payload.data === 'string') {
+            console.log('🔍 [DEBUG] payload.data é string, fazendo parse...');
+            const parsedData = JSON.parse(response.payload.data);
+            console.log('🔍 [DEBUG] parsedData:', parsedData);
+            if (parsedData.action === 'message' && parsedData.message) {
+              console.log('✅ [DEBUG] Mensagem encontrada via action=message:', parsedData.message);
+              return parsedData.message;
+            } else if (parsedData.message) {
+              console.log('✅ [DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
+              return parsedData.message;
+            }
+          }
+          // Se payload.data já for um objeto
+          else if (typeof response.payload.data === 'object' && response.payload.data.message) {
+            console.log('✅ [DEBUG] Mensagem encontrada em response.payload.data.message:', response.payload.data.message);
+            return response.payload.data.message;
+          }
+        } catch (e) {
+          console.error('❌ [DEBUG] Erro ao fazer parse do payload.data:', e);
+          // Fallback: usar a string payload.data como está se não conseguir fazer parse
+          if (typeof response.payload.data === 'string') {
+            return response.payload.data;
+          }
+        }
+      }
+      
+      // Fallback para response.data (formato antigo)
       if (response.data) {
         console.log('🔍 [DEBUG] response.data encontrado:', response.data);
         try {
@@ -128,11 +170,11 @@ export function useN8nIntegration() {
             console.log('🔍 [DEBUG] data é string, fazendo parse...');
             const parsedData = JSON.parse(response.data);
             console.log('🔍 [DEBUG] parsedData:', parsedData);
-            if (parsedData.message) {
-              console.log('✅ [DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
-              return parsedData.message;
-            } else if (parsedData.action === 'message' && parsedData.message) {
+            if (parsedData.action === 'message' && parsedData.message) {
               console.log('✅ [DEBUG] Mensagem encontrada via action=message:', parsedData.message);
+              return parsedData.message;
+            } else if (parsedData.message) {
+              console.log('✅ [DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
               return parsedData.message;
             }
           }
