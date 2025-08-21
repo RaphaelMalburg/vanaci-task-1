@@ -1,17 +1,14 @@
-# Script simples para testar o webhook do n8n
+# Script simples para testar o webhook do n8n (sem autenticação)
 param(
-    [string]$WebhookUrl = "https://rcmalburg.app.n8n.cloud/webhook-test/chat-ai",
-    [string]$BearerToken = "vanaci-token-super-seguro"
+    [string]$WebhookUrl = "https://rcmalburg.app.n8n.cloud/webhook-test/chat-ai"
 )
 
-Write-Host "=== Teste do Webhook n8n ===" -ForegroundColor Cyan
+Write-Host "=== Teste do Webhook n8n (Sem Autenticação) ===" -ForegroundColor Cyan
 Write-Host "URL: $WebhookUrl" -ForegroundColor Yellow
-Write-Host "Token: $BearerToken" -ForegroundColor Yellow
 Write-Host ""
 
 $headers = @{ 
     'Content-Type' = 'application/json'
-    'Authorization' = "Bearer $BearerToken"
 }
 
 $body = @{

@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
 
     // Step 5: Get n8n webhook URL from environment variables
     const webhookUrl = process.env.N8N_WEBHOOK_URL;
-    const bearerToken = process.env.N8N_BEARER;
     
     if (!webhookUrl) {
       console.error('N8N_WEBHOOK_URL not configured');
@@ -43,11 +42,6 @@ export async function POST(request: NextRequest) {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    
-    // Add Bearer token if configured
-    if (bearerToken) {
-      headers['Authorization'] = `Bearer ${bearerToken}`;
-    }
     
     const requestPayload = {
       sessionId: currentSessionId,

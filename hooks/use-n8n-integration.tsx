@@ -27,15 +27,9 @@ export function useN8nIntegration() {
   // Função para enviar mensagem ao n8n
   const sendToN8n = useCallback(async (message: string, sessionId: string): Promise<N8nResponse | null> => {
     const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
-    const bearerToken = process.env.NEXT_PUBLIC_N8N_BEARER;
     
     if (!webhookUrl) {
       console.error('N8N_WEBHOOK_URL não configurado');
-      return null;
-    }
-    
-    if (!bearerToken) {
-      console.error('N8N_BEARER token não configurado');
       return null;
     }
 
@@ -43,8 +37,7 @@ export function useN8nIntegration() {
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${bearerToken}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           message,
