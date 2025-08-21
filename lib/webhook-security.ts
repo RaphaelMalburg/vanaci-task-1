@@ -18,11 +18,17 @@ export function validateWebhookSecret(receivedSecret: string | null, expectedSec
     return false;
   }
   
+  // Normalizar strings para evitar problemas de encoding
+  const receivedBuffer = Buffer.from(receivedSecret.trim(), 'utf8');
+  const expectedBuffer = Buffer.from(expectedSecret.trim(), 'utf8');
+  
+  // Verificar se os buffers têm o mesmo tamanho
+  if (receivedBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+  
   // Comparação segura para evitar timing attacks
-  return crypto.timingSafeEqual(
-    Buffer.from(receivedSecret),
-    Buffer.from(expectedSecret)
-  );
+  return crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
 }
 
 // Função para validar assinatura HMAC (opcional, para maior segurança)
@@ -43,6 +49,11 @@ export function validateHMACSignature(
     .createHmac('sha256', secret)
     .update(payload)
     .digest('hex');
+  
+  // Verificar se as assinaturas têm o mesmo tamanho
+  if (cleanSignature.length !== expectedSignature.length) {
+    return false;
+  }
   
   // Comparação segura
   return crypto.timingSafeEqual(
@@ -103,7 +114,7 @@ export function validateWebhook(
   
   // Validar IP de origem se configurado
   const clientIP = headers.get('x-forwarded-for') || headers.get('x-real-ip');
-  if (config.allowedIPs && clientIP) {
+  if (config.allowedIPs && config.allowedIPs.length > 0 && clientIP) {
     if (!validateSourceIP(clientIP, config.allowedIPs)) {
       return { isValid: false, error: 'IP not allowed' };
     }

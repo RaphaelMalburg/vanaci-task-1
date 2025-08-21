@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       {
         secret: process.env.APP_WEBHOOK_SECRET,
         maxAge: 300, // 5 minutos
-        allowedIPs: process.env.ALLOWED_IPS?.split(',') || []
+        allowedIPs: process.env.ALLOWED_IPS?.split(',').filter(ip => ip.trim()) || []
       }
     );
     
