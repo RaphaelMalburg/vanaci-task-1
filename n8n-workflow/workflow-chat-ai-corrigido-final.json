@@ -1,0 +1,148 @@
+{
+  "name": "workflow-chat-ai-corrigido-final",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat-ai",
+        "options": {
+          "noResponseBody": false
+        }
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 200],
+      "id": "webhook-trigger",
+      "typeVersion": 2.1,
+      "webhookId": "chat-ai"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Mistral LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "position": [400, 400],
+      "id": "mistral-llm",
+      "typeVersion": 1,
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "5jivpCWX1LLq9tTG",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message || $json.message || 'Olá!' }}",
+        "options": {
+          "systemMessage": "Você é um assistente que analisa mensagens e decide entre navegação ou conversa.\n\nSe a mensagem menciona um SITE ESPECÍFICO → retorne JSON: {\"action\": \"redirect\", \"url\": \"https://site.com\"}\n\nSe é CONVERSA NORMAL → retorne JSON: {\"action\": \"message\", \"message\": \"sua resposta\"}\n\nExemplos:\n- \"quero ir para nike\" → {\"action\": \"redirect\", \"url\": \"https://www.nike.com.br\"}\n- \"como você está?\" → {\"action\": \"message\", \"message\": \"Estou bem, obrigado!\"}"
+        }
+      },
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [400, 200],
+      "id": "ai-agent",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vanaci-task-1.vercel.app/api/webhook",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-webhook-secret",
+              "value": "vanaci-secret-super-seguro"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send to Next.js",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [800, 200],
+      "id": "http-request",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"received\": $json } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1200, 200],
+      "id": "respond-webhook",
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send to Next.js",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Next.js": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
