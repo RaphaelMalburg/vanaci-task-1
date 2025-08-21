@@ -115,8 +115,22 @@ export async function POST(request: NextRequest) {
     // Processar diferentes formatos de resposta do n8n
     let content = 'No response from AI agent';
     
-    if (webhookData.data && webhookData.data.message) {
-      content = webhookData.data.message;
+    if (webhookData.data) {
+      try {
+        // Se data for uma string JSON, fazer parse
+        if (typeof webhookData.data === 'string') {
+          const parsedData = JSON.parse(webhookData.data);
+          if (parsedData.message) {
+            content = parsedData.message;
+          }
+        }
+        // Se data já for um objeto
+        else if (typeof webhookData.data === 'object' && webhookData.data.message) {
+          content = webhookData.data.message;
+        }
+      } catch (e) {
+        console.error('Erro ao fazer parse do data:', e);
+      }
     } else if (webhookData.message) {
       content = webhookData.message;
     } else if (webhookData.subject) {

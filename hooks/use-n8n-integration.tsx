@@ -115,9 +115,23 @@ export function useN8nIntegration() {
       }
       
       // Tentar diferentes propriedades para a mensagem de resposta
-      // Baseado na resposta do n8n: {"recipient": true, "subject": "...", "data": {"action": "...", "message": "..."}}
-      if (response.data && response.data.message) {
-        return response.data.message;
+      // Baseado na resposta do n8n: {"data": "{\"action\": \"message\", \"message\": \"...\"}"}  
+      if (response.data) {
+        try {
+          // Se data for uma string JSON, fazer parse
+          if (typeof response.data === 'string') {
+            const parsedData = JSON.parse(response.data);
+            if (parsedData.message) {
+              return parsedData.message;
+            }
+          }
+          // Se data já for um objeto
+          else if (typeof response.data === 'object' && response.data.message) {
+            return response.data.message;
+          }
+        } catch (e) {
+          console.error('Erro ao fazer parse do data:', e);
+        }
       }
       
       if (response.message) {
