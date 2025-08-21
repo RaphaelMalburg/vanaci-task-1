@@ -112,32 +112,46 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 10: Return the AI assistant response to the client
+    // DEBUG: Log completo do webhook recebido
+    console.log('🔍 [API DEBUG] Webhook data completo:', JSON.stringify(webhookData, null, 2));
+    console.log('🔍 [API DEBUG] Tipo de webhookData.data:', typeof webhookData.data);
+    
     // Processar diferentes formatos de resposta do n8n
     let content = 'No response from AI agent';
     
     if (webhookData.data) {
+      console.log('🔍 [API DEBUG] webhookData.data encontrado:', webhookData.data);
       try {
         // Se data for uma string JSON, fazer parse
         if (typeof webhookData.data === 'string') {
+          console.log('🔍 [API DEBUG] data é string, fazendo parse...');
           const parsedData = JSON.parse(webhookData.data);
+          console.log('🔍 [API DEBUG] parsedData:', parsedData);
           if (parsedData.message) {
+            console.log('✅ [API DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
             content = parsedData.message;
           }
         }
         // Se data já for um objeto
         else if (typeof webhookData.data === 'object' && webhookData.data.message) {
+          console.log('✅ [API DEBUG] Mensagem encontrada em webhookData.data.message:', webhookData.data.message);
           content = webhookData.data.message;
         }
       } catch (e) {
-        console.error('Erro ao fazer parse do data:', e);
+        console.error('❌ [API DEBUG] Erro ao fazer parse do data:', e);
       }
     } else if (webhookData.message) {
+      console.log('✅ [API DEBUG] Mensagem encontrada em webhookData.message:', webhookData.message);
       content = webhookData.message;
     } else if (webhookData.subject) {
+      console.log('✅ [API DEBUG] Mensagem encontrada em webhookData.subject:', webhookData.subject);
       content = webhookData.subject;
     } else if (webhookData.response) {
+      console.log('✅ [API DEBUG] Mensagem encontrada em webhookData.response:', webhookData.response);
       content = webhookData.response;
     }
+    
+    console.log('🎯 [API DEBUG] Conteúdo final extraído:', content);
     
     const response = {
       id: generateUUID(),

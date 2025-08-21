@@ -114,23 +114,32 @@ export function useN8nIntegration() {
         return `Redirecionando para: ${actionData.url}`;
       }
       
+      // DEBUG: Log completo da resposta
+      console.log('🔍 [DEBUG] Resposta completa do n8n:', JSON.stringify(response, null, 2));
+      console.log('🔍 [DEBUG] Tipo de response.data:', typeof response.data);
+      
       // Tentar diferentes propriedades para a mensagem de resposta
       // Baseado na resposta do n8n: {"data": "{\"action\": \"message\", \"message\": \"...\"}"}  
       if (response.data) {
+        console.log('🔍 [DEBUG] response.data encontrado:', response.data);
         try {
           // Se data for uma string JSON, fazer parse
           if (typeof response.data === 'string') {
+            console.log('🔍 [DEBUG] data é string, fazendo parse...');
             const parsedData = JSON.parse(response.data);
+            console.log('🔍 [DEBUG] parsedData:', parsedData);
             if (parsedData.message) {
+              console.log('✅ [DEBUG] Mensagem encontrada em parsedData.message:', parsedData.message);
               return parsedData.message;
             }
           }
           // Se data já for um objeto
           else if (typeof response.data === 'object' && response.data.message) {
+            console.log('✅ [DEBUG] Mensagem encontrada em response.data.message:', response.data.message);
             return response.data.message;
           }
         } catch (e) {
-          console.error('Erro ao fazer parse do data:', e);
+          console.error('❌ [DEBUG] Erro ao fazer parse do data:', e);
         }
       }
       
