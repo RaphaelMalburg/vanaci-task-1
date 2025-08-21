@@ -1,0 +1,155 @@
+{
+  "name": "vanaci-wkflw",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat-ai",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [-432, 96],
+      "id": "41564eed-661a-4e02-8f9f-f6f55a494bef",
+      "typeVersion": 2.1,
+      "webhookId": "chat-ai"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Mistral LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "position": [-32, 288],
+      "id": "9cf0cb2b-620a-49fc-adf7-14cc8c1dfc9f",
+      "typeVersion": 1,
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "5jivpCWX1LLq9tTG",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message || $json.message || 'Olá!' }}",
+        "options": {
+          "systemMessage": "Você é um assistente que analisa mensagens e decide entre navegação ou conversa.\n\nSe a mensagem menciona um SITE ESPECÍFICO → retorne JSON: {\"action\": \"redirect\", \"url\": \"https://site.com\"}\n\nSe é CONVERSA NORMAL → retorne JSON: {\"action\": \"message\", \"message\": \"sua resposta\"}\n\nExemplos:\n- \"quero ir para nike\" → {\"action\": \"redirect\", \"url\": \"https://www.nike.com.br\"}\n- \"como você está?\" → {\"action\": \"message\", \"message\": \"Estou bem, obrigado!\"}"
+        }
+      },
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [-32, 96],
+      "id": "678bcba5-73d3-4f1c-a4ba-dc73ec9513e6",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vanaci-task-1.vercel.app/api/webhook",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-webhook-secret",
+              "value": "vanaci-secret-super-seguro"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.output || $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send to Next.js",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [368, 96],
+      "id": "d109b3b4-f0e7-4cc1-80a1-95431cb60508",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [768, 96],
+      "id": "d964b598-8d81-464a-90bf-b0d0c217c5c9",
+      "typeVersion": 1.1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send to Next.js",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Next.js": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26b126aa-b691-439c-a478-2394ce7030cd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c12d940ffc869e54a2ba5da3ced8cd43b238bfaa5bb40cd905af93ba8a2682af"
+  },
+  "id": "98ZTtwoUZfC6fkI4",
+  "tags": []
+}
