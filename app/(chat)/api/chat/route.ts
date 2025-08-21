@@ -38,11 +38,19 @@ export async function POST(request: NextRequest) {
     const currentSessionId = sessionId || generateUUID();
 
     // Step 7: Send user message to n8n webhook for processing
+    const bearerToken = process.env.N8N_BEARER;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add Bearer token if configured
+    if (bearerToken) {
+      headers['Authorization'] = `Bearer ${bearerToken}`;
+    }
+    
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         sessionId: currentSessionId,
         message: message.content,
@@ -52,7 +60,16 @@ export async function POST(request: NextRequest) {
 
     // Step 8: Check if webhook request was successful
     if (!webhookResponse.ok) {
-      throw new Error(`Webhook request failed: ${webhookResponse.status}`);
+      console.warn(`N8N webhook failed with status ${webhookResponse.status}. Using fallback response.`);
+      
+      // Fallback response when n8n is not available
+      return Response.json({
+        id: generateUUID(),
+        role: 'assistant',
+        content: `Recebi sua mensagem: "${message.content}". O sistema n8n está temporariamente indisponível, mas sua mensagem foi registrada.`,
+        sessionId: currentSessionId,
+        fallback: true
+      });
     }
 
     // Step 9: Parse the response from n8n webhook
