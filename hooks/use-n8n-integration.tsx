@@ -7,6 +7,10 @@ interface N8nResponse {
   url?: string;
   message?: string;
   shouldRedirect?: boolean;
+  extractedAction?: {
+    action?: 'redirect' | 'message';
+    url?: string;
+  };
 }
 
 // Interface para payload enviado ao n8n
@@ -56,9 +60,16 @@ export function useN8nIntegration() {
       const result: N8nResponse = await response.json();
       
       // Processar resposta do n8n
-      if (result.action === 'redirect' && result.url) {
-        console.log('Redirecionamento solicitado pelo n8n:', result.url);
-        return result;
+      // Verificar primeiro se há extractedAction (do processamento de markdown)
+      const actionData = result.extractedAction || result;
+      
+      if (actionData.action === 'redirect' && actionData.url) {
+        console.log('Redirecionamento solicitado pelo n8n:', actionData.url);
+        return {
+          ...result,
+          action: actionData.action,
+          url: actionData.url
+        };
       }
 
       return result;
@@ -92,10 +103,13 @@ export function useN8nIntegration() {
     const response = await sendToN8n(message, chatId);
     
     if (response) {
+      // Verificar primeiro se há extractedAction (do processamento de markdown)
+      const actionData = response.extractedAction || response;
+      
       // Se houver redirecionamento
-      if (response.action === 'redirect' && response.url) {
-        handleRedirect(response.url);
-        return `Redirecionando para: ${response.url}`;
+      if (actionData.action === 'redirect' && actionData.url) {
+        handleRedirect(actionData.url);
+        return `Redirecionando para: ${actionData.url}`;
       }
       
       // Se houver mensagem de resposta

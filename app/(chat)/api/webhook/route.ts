@@ -44,8 +44,29 @@ export async function POST(request: NextRequest) {
         payload = JSON.parse(payloadText);
       } catch (parseError) {
         console.log('Erro ao fazer parse do JSON:', parseError);
-        // Se não conseguir fazer parse, criar um payload básico
-        payload = { message: payloadText };
+        
+        // Tentar extrair JSON de texto que pode conter markdown
+        const jsonMatch = payloadText.match(/```json\s*({[\s\S]*?})\s*```/i) || 
+                         payloadText.match(/({\s*"action"[\s\S]*?})/i);
+        
+        if (jsonMatch) {
+          try {
+            const extractedJson = jsonMatch[1].replace(/`/g, '').trim();
+            const parsedAction = JSON.parse(extractedJson);
+            payload = {
+              action: parsedAction.action,
+              url: parsedAction.url,
+              message: payloadText,
+              extractedAction: parsedAction
+            };
+            console.log('JSON extraído do markdown:', parsedAction);
+          } catch (extractError) {
+            console.log('Erro ao extrair JSON do markdown:', extractError);
+            payload = { message: payloadText };
+          }
+        } else {
+          payload = { message: payloadText };
+        }
       }
     }
     
