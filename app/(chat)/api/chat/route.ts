@@ -28,17 +28,8 @@ export async function POST(request: NextRequest) {
     const webhookUrl = process.env.N8N_WEBHOOK_URL;
     const bearerToken = process.env.N8N_BEARER;
     
-    // Debug logs for environment variables
-    console.log('=== CHAT API DEBUG ===');
-    console.log('Environment:', process.env.NODE_ENV);
-    console.log('Webhook URL configured:', !!webhookUrl);
-    console.log('Webhook URL (first 50 chars):', webhookUrl?.substring(0, 50));
-    console.log('Bearer token configured:', !!bearerToken);
-    console.log('Bearer token (first 10 chars):', bearerToken?.substring(0, 10));
-    console.log('Request body:', JSON.stringify({ message: message.content, sessionId }));
-
     if (!webhookUrl) {
-      console.error('N8N_WEBHOOK_URL not found in environment variables');
+      console.error('N8N_WEBHOOK_URL not configured');
       return Response.json(
         { error: 'N8N webhook URL not configured' },
         { status: 500 }
@@ -56,9 +47,6 @@ export async function POST(request: NextRequest) {
     // Add Bearer token if configured
     if (bearerToken) {
       headers['Authorization'] = `Bearer ${bearerToken}`;
-      console.log('Bearer token added to headers');
-    } else {
-      console.warn('No Bearer token found - requests may fail');
     }
     
     const requestPayload = {
@@ -66,10 +54,6 @@ export async function POST(request: NextRequest) {
       message: message.content,
       timestamp: new Date().toISOString(),
     };
-    
-    console.log('Making request to webhook:', webhookUrl);
-    console.log('Request payload:', JSON.stringify(requestPayload));
-    console.log('Request headers:', JSON.stringify(headers));
     
     let webhookResponse;
     try {
@@ -79,17 +63,9 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify(requestPayload),
       });
       
-      console.log('Webhook response status:', webhookResponse.status);
-      console.log('Webhook response headers:', JSON.stringify(Object.fromEntries(webhookResponse.headers.entries())));
-      
     } catch (fetchError) {
-      console.error('Fetch error occurred:', fetchError);
       const error = fetchError as Error;
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
+      console.error('Fetch error:', error.message);
       
       // Fallback response when fetch fails
       return Response.json({
@@ -104,16 +80,12 @@ export async function POST(request: NextRequest) {
 
     // Step 8: Check if webhook request was successful
     if (!webhookResponse.ok) {
-      console.warn(`N8N webhook failed with status ${webhookResponse.status}`);
-      
-      // Try to get error details from response
-      let errorDetails = 'Unknown error';
+      let errorDetails = `HTTP ${webhookResponse.status}`;
       try {
         const errorText = await webhookResponse.text();
-        console.log('Error response body:', errorText);
-        errorDetails = errorText || `HTTP ${webhookResponse.status}`;
+        errorDetails = errorText || errorDetails;
       } catch (e) {
-        console.error('Could not read error response:', e);
+        // Ignore parse errors
       }
       
       // Fallback response when n8n is not available
@@ -132,11 +104,9 @@ export async function POST(request: NextRequest) {
     let webhookData;
     try {
       const responseText = await webhookResponse.text();
-      console.log('Webhook response body:', responseText);
       webhookData = JSON.parse(responseText);
-      console.log('Parsed webhook data:', JSON.stringify(webhookData));
     } catch (parseError) {
-      console.error('Failed to parse webhook response:', parseError);
+      console.error('Failed to parse webhook response');
       return Response.json({
         id: generateUUID(),
         role: 'assistant',
@@ -155,25 +125,18 @@ export async function POST(request: NextRequest) {
       sessionId: currentSessionId,
     };
     
-    console.log('=== SUCCESS: Returning response ===');
-    console.log('Final response:', JSON.stringify(response));
-    console.log('=== END CHAT API DEBUG ===');
-    
     return Response.json(response);
 
   } catch (error) {
     // Step 11: Handle any errors that occur during processing
-    console.error('=== CHAT API UNEXPECTED ERROR ===');
-    console.error('Error type:', error.constructor.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('=== END ERROR DEBUG ===');
+    const err = error as Error;
+    console.error('Chat API Error:', err.message);
     
     return Response.json(
       { 
         error: 'Failed to process chat message',
-        details: error.message,
-        type: error.constructor.name
+        details: err.message,
+        type: err.constructor.name
       },
       { status: 500 }
     );
