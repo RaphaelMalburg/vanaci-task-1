@@ -5,6 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "chat-ai",
+        "authentication": "headerAuth",
         "options": {
           "noResponseBody": false
         }
@@ -14,7 +15,13 @@
       "position": [0, 200],
       "id": "webhook-trigger",
       "typeVersion": 2.1,
-      "webhookId": "chat-ai"
+      "webhookId": "chat-ai",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "webhook-auth",
+          "name": "Webhook Authentication"
+        }
+      }
     },
     {
       "parameters": {
